@@ -1,20 +1,12 @@
-n = int(input())
-a = list(map(int, input().split()))
-c = int(input())
-tbl = [[0] * c for _ in range(n + 1)]
-for i in range(1, n + 1):
-    for j in range(1, c):
-        tbl[i][j] = tbl[i - 1][j]
-        if j >= a[i - 1]:
-            tbl[i][j] = max(
-                tbl[i][j],
-                tbl[i - 1][j - a[i - 1]] + a[i - 1]
-            )
-print(tbl[-1][-1])
-i = n
-j = c - 1
-while i:
-    if tbl[i][j] != tbl[i - 1][j]:
-        j -= a[i - 1]
-        print(i, end=' ')
-    i -= 1
+def bs(a, l, r):
+    if r - l < 2:
+        print(l, r)
+        if l == a[l] and r != a[r]:
+            return r
+        if l == 0:
+            return 0
+        return -1
+    mid = (r + l) // 2
+    if mid != a[mid]:
+        return bs(a, l, mid)
+    return bs(a, mid, r)
