@@ -1,12 +1,26 @@
-def bs(a, l, r):
+def f(a, l, r):
     if r - l < 2:
-        print(l, r)
-        if l == a[l] and r != a[r]:
-            return r
-        if l == 0:
-            return 0
-        return -1
+        return r, l
     mid = (r + l) // 2
-    if mid != a[mid]:
-        return bs(a, l, mid)
-    return bs(a, mid, r)
+    if a[l] < a[mid] and a[r] < a[mid]:
+        return f(a, mid, r)
+    if a[r] > a[mid] and a[l] > a[mid]:
+        return f(a, l, mid)
+    return f(a, mid, r)
+
+
+def bs(a, t, l, r, s):
+    if (r + s) % len(a) - (l + s) % len(a) <= 1:
+        if t == a[r]:
+            return r
+        if t == a[l]:
+            return l
+        return -1
+    mid = ((r + s) % len(a) + (l + s) % len(a)) // 2 - s
+    if mid < 0:
+        mid = len(a) + mid
+    if t == a[mid]:
+        return mid
+    if t < a[mid]:
+        return bs(a, t, l, mid, s)
+    return bs(a, t, mid, r, s)
