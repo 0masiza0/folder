@@ -1,0 +1,101 @@
+#include <iostream>
+#include <ostream>
+#include <vector>
+
+template <typename T>
+class ConstIterator {
+private:
+    typename
+    std::vector<T>::iterator it;
+    size_t index;
+    size_t rows, cols;
+public:
+    ConstIterator(typename std::vector<T>::iterator it_, size_t rows_, size_t cols_) {
+        index = 0;
+        rows = rows_;
+        cols = cols_;
+        it = it_;
+    }
+    /*
+    ConstIterator<T>& operator++() {
+        return ConstIterator<T>(++it, rows, cols);
+    }
+    bool operator==(const ConstIterator& other) const {
+        return it == other.it;
+    }
+    bool operator!=(const ConstIterator& other) const {
+        return it != other.it;
+    }*/
+    const T& operator*() const {
+        return *it;
+    }
+};
+
+template<typename T>
+class Matrix {
+private:
+    std::vector<std::vector<T>> matrix;
+    int rows, columns;
+
+public:
+    explicit Matrix(const std::vector<std::vector<T>>& matrix_) {
+        matrix.resize(matrix_.size());
+        for (int i = 0; i < matrix_.size(); ++i) {
+            copy(matrix_[i].begin(), matrix_[i].end(), std::back_inserter(matrix[i]));
+        }
+        rows = matrix_.size();
+        columns = matrix_[0].size();
+    }
+    /*[[nodiscard]] typename
+    std::vector<T>::iterator begin() {
+        //auto iter = matrix[0].begin();
+        return matrix[0].begin();
+    }*/
+    [[nodiscard]]
+    ConstIterator<T> begin() {
+        return ConstIterator<T>(matrix[0].begin(), rows, columns);
+    }
+    [[nodiscard]] typename
+    std::vector<T>::iterator end() {
+        return matrix[rows].end();
+    }
+    [[nodiscard]] typename
+    std::vector<T>::iterator end() const {
+        return matrix[rows].end();
+    }
+    [[nodiscard]] std::pair<size_t, size_t> size() const {
+        return{ matrix.size(), matrix[0].size() };
+    }
+};
+
+
+
+template<typename T>
+std::ostream& operator<<(std::ostream& out, Matrix<T>& m) {
+    auto iter = m.begin();
+    auto [row, column] = m.size();
+    for (int i = 0; i < row; ++i) {
+        for (int j = 0; j < column; ++j) {
+            out << *iter;
+            //++iter;
+            if (j != column - 1) {
+                out << "\t";
+            }
+        }
+        if (i != row - 1) {
+            out << "\n";
+        }
+    }
+    return out;
+}
+
+
+int main() {
+    std::vector<std::vector<double>> vv = {
+            {3.14, 13.13, 2,7234, 5},
+            {1, 0, -1,11, 9}
+    };
+    Matrix<double> m(vv);
+    //auto iter = m.begin();
+    std::cout << m;
+}
