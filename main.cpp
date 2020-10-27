@@ -33,7 +33,7 @@ chars ShrinkBlock(
 
     //  Define variables for RGB values
     unsigned char red, green, blue;
-
+ 
     //  In the loop:
     //  Search for the most common colour,
     //  Put the frequency in max_freq,
