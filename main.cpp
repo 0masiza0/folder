@@ -34,6 +34,7 @@ chars ShrinkBlock(
     //  Define variables for RGB values
     unsigned char red, green, blue;
 
+    //  In the loop:
     //  Search for the most common colour,
     //  Put the frequency in max_freq,
     //  Put the colour in max_freq_in_chars
@@ -59,47 +60,59 @@ chars ShrinkBlock(
 
 int main() {
     //  Define input file path
-    const char* input_path = "input.bmp";
+    const char* input_path = "C:\\Users\\Ian\\CLionProjects\\colours\\masiza.bmp";
 
     //  q is a degree of image compression
-    size_t q = 600;
+    //  (q = 10 means that each block 10x10 pixels will be shrunk to 1 pixel)
+    size_t q = 10;
 
-    //  image is an input file,
-    // display is an output with size (x = image.width() / q, y = image.height() / q, z = 1)
+    // "image" is an input file,
+    // "display" is an output with size (x = image.width() / q, y = image.height() / q, z = 1)
     // and dimension of colours = 3 (RGB)
     CImg<unsigned char> image(input_path);
     CImg<unsigned char> display(image.width() / q, image.height() / q, 1, 3);
 
-    //  Define std::vector<std::vector<chars>> and resize it to size of display
+    //  Define std::vector<std::vector<chars>> and resize it to size of "display"
     std::vector<std::vector<chars>> freqs_of_blocks;
     freqs_of_blocks.resize(display.height());
     for (auto& freq_of_block : freqs_of_blocks) {
         freq_of_block.resize(display.width());
     }
 
-    //  Fill freqs_of_blocks whith frequencies
+    //  Fill freqs_of_blocks with frequencies
+    //  x, y are indexes of freqs_of_blocks
     size_t x = 0, y = 0;
     for (size_t i = 0; i + q - 1 < image.width(); i += q) {
-        y = 0;
+        x = 0;
         for (size_t j = 0; j + q - 1 < image.height(); j += q) {
-            freqs_of_blocks[y++][x] = ShrinkBlock(image, i, j, q);
+            freqs_of_blocks[x++][y] = ShrinkBlock(image, i, j, q);
         }
-        ++x;
-        std::cout << x << "\n";
+        ++y;
     }
 
-    //  Fill the display
+    //  Fill the "display" with black colour
     display.fill(0);
+
+    //  The peculiarity CImg.h is the order of array's indexes:
+    //  first one is for number of column, second one is for number of row
+    //  that's why to get a (i, j) element of CImg<> array
+    //  user should call (j, i) element of a classic array (lines 100-102)
+
+    //  Fill the display with "shrank" colours
     for (size_t i = 0; i < display.width(); ++i) {
         for (size_t j = 0; j < display.height(); ++j) {
+
+            //  Gather colour components to one variable
             unsigned char col[] = {freqs_of_blocks[j][i][0],
                                    freqs_of_blocks[j][i][1],
                                    freqs_of_blocks[j][i][2]};
-            display.draw_rectangle(i, j, i + 1, y + 1, col);
+
+            //  Draw a pixel with (i, j) coordinates and "col" colour
+            display.draw_point(i, j, col);
         }
     }
 
-    //  Show the display
+    //  Show the "display" named "Shrank Image"
     display.display("Shrank Image");
     return 0;
 }
