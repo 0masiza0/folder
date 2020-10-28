@@ -19,7 +19,7 @@ int main() {
     CImg<unsigned char> image(input_path);
     CImg<unsigned char> most_common_colour(10, 10, 1, 3);
 
-    //  Define mp of colour frequencies
+    //  Define map of colour frequencies
     std::map<chars, size_t> freqs;
 
     //  Define variables for RGB values
@@ -54,16 +54,16 @@ int main() {
 
     //  Draw a rectangle with (0, 0) coordinates of upper-left corner,
     //  (5, 5) coordinates of lower-right corner,
-    //  and colour col
-    //most_common_colour.draw_rectangle(0, 0, 5, 5, col);
+    //  and colour "col"
+    most_common_colour.draw_rectangle(0, 0, 5, 5, col);
 
     /*
      *  I have no idea why, but when I use line 66 instead of line 58,
      *  the printed colour looks very different, though both colours have the same RGB code.
-     *  Maybe the problem is only in my display. (ine 66 just fills the region with colour col)
+     *  Maybe the problem is only in my display. (line 66 just fills the region with colour "col")
      */
 
-    most_common_colour.draw_fill(0, 0, col);
+    //most_common_colour.draw_fill(0, 0, col);
 
     //  Show the answer
     most_common_colour.display("Most Common Colour");
