@@ -11,7 +11,7 @@ using chars = std::vector<unsigned char>;
 
 int main() {
     //  Define input file path
-    const char* input_path = "C:\\Users\\Ian\\CLionProjects\\colours\\masiza.bmp";
+    const char* input_path = "input.bmp";
 
     // "image" is an input file,
     // "most_common_colour" is an output with size (x = 10, y = 10, z = 1)
