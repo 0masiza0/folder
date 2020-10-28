@@ -1,8 +1,6 @@
 #include <algorithm>
-#include <iostream>
 #include "CImg.h"          //that library provides toolkit for image processing
 #include <map>
-#include <unordered_map>
 #include <vector>
 
 using namespace cimg_library;
@@ -96,7 +94,7 @@ int main() {
     //  The peculiarity CImg.h is the order of array's indexes:
     //  first one is for number of column, second one is for number of row
     //  that's why to get a (i, j) element of CImg<> array
-    //  user should call (j, i) element of a classic array (lines 106-108)
+    //  user should call (j, i) element of a classic array (lines 104-106)
 
     //  Fill the display with "shrank" colours
     for (size_t i = 0; i < display.width(); ++i) {
