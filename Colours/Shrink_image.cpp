@@ -33,9 +33,10 @@ chars ShrinkBlock(
     unsigned char red, green, blue;
 
     //  In the loop:
-    //  Search for the most common colour,
-    //  Put the frequency in max_freq,
-    //  Put the colour in max_freq_in_chars.
+    //  While searching for the most common colour,
+    //  If frequency of current pixel colour > previous max_freq value:
+    //  Update max_freq (frequency of the most common colour) and
+    //  Update max_freq_in_chars (the most common colour).
     size_t max_freq = 0;
     chars max_freq_in_chars;
     for (size_t i = x_start; i < x_border; ++i) {
@@ -94,7 +95,7 @@ int main() {
     //  The peculiarity CImg.h is the order of array's indexes:
     //  first one is for number of column, second one is for number of row
     //  that's why to get a (i, j) element of CImg<> array
-    //  user should call (j, i) element of a classic array (line 86, lines 104-106).
+    //  user should call (j, i) element of a classic array (line 87, lines 105-107).
 
     //  Fill the display with "shrank" colours
     for (size_t i = 0; i < display.width(); ++i) {
