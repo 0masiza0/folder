@@ -29,7 +29,7 @@ chars ShrinkBlock(
     //  Define map of colour frequencies.
     std::map<chars, size_t> freqs_of_block;
 
-    //  Define variables for RGB values.
+    //  Define variables for RGB channels.
     unsigned char red, green, blue;
 
     //  In the loop:
