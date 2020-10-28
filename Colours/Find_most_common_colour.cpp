@@ -1,7 +1,5 @@
-#include <iostream>
 #include "CImg.h"           //that library provides toolkit for image processing
 #include <map>
-#include <unordered_map>
 #include <vector>
 
 using namespace cimg_library;
@@ -58,9 +56,9 @@ int main() {
     most_common_colour.draw_rectangle(0, 0, 5, 5, col);
 
     /*
-     *  I have no idea why, but when I use line 66 instead of line 58,
+     *  I have no idea why, but when I use line 64 instead of line 56,
      *  the printed colour looks very different, though both colours have the same RGB code.
-     *  Maybe the problem is only in my display. (line 66 just fills the region with colour "col")
+     *  Maybe the problem is only in my display. (line 64 just fills the region with colour "col")
      */
 
     //most_common_colour.draw_fill(0, 0, col);
