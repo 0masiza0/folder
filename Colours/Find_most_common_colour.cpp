@@ -24,9 +24,10 @@ int main() {
     unsigned char red, green, blue;
 
     //  In the loop:
-    //  Search for the most common colour,
-    //  Put the frequency in max_freq,
-    //  Put the colour in max_freq_in_chars
+    //  While searching for the most common colour,
+    //  If frequency of current pixel colour > previous max_freq value:
+    //  Update max_freq (frequency of the most common colour) and
+    //  Update max_freq_in_chars (the most common colour).
     size_t max_freq = 0;
     chars max_freq_in_chars;
     for (size_t i = 0; i < image.width(); ++i) {
@@ -56,7 +57,7 @@ int main() {
     most_common_colour.draw_rectangle(0, 0, 5, 5, col);
 
     /*
-     *  I have no idea why, but when I use line 64 instead of line 56,
+     *  I have no idea why, but when I use line 65 instead of line 57,
      *  the printed colour looks very different, though both colours have the same RGB code.
      *  Maybe the problem is only in my display. (line 64 just fills the region with colour "col")
      */
