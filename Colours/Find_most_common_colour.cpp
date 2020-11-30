@@ -1,71 +1,155 @@
-#include "CImg.h"           //that library provides toolkit for image processing
-#include <map>
-#include <vector>
+#include <clocale>
+#include <iostream>
+#include "CImg.h"           //  библиотека для работы с изображениями
+#include <string>
+#include <tuple>
+#include <unordered_map>
 
 using namespace cimg_library;
 
-// A nickname for std::vector<unsigned char>
-using chars = std::vector<unsigned char>;
+//  В переменной типа Colour хранятся данные об интенсивности цветовых каналов (RGB) отдельного пикселя
+struct Colour {
+    unsigned char
+            r = 0,
+            g = 0,
+            b = 0;
+};
 
-int main() {
-    //  Define input file path
-    const char* input_path = "input.bmp";
+//  Чтобы использовать Colour в качестве ключа в unordered_map, определим хэш-функцию.
+//  В свою очередь хэш-функция требует определения оператора ==
+//  (lhs - left-hand side, rhs - right-hand side)
+bool operator== (const Colour& lhs, const Colour& rhs) {
+    return std::tie(lhs.r, lhs.g, lhs.b) ==
+           std::tie(rhs.r, rhs.g, rhs.b);
+}
 
-    // "image" is an input file,
-    // "most_common_colour" is an output with size (x = 10, y = 10, z = 1)
-    // and dimension of colours = 3 (RGB)
-    CImg<unsigned char> image(input_path);
-    CImg<unsigned char> most_common_colour(10, 10, 1, 3);
+//  Используем полиномиальный хэш вида x1 + x2 * p + ... + xn * p ^ (n - 1).
+//  К p предъявлено следующее требование: p > самого большого кода цвета (> 255);
+//  Максимальное значение хэша при p = 256 равно 255 + 255 * 256 + 255 * 256 ^ 2 = 16'777'215,
+//  что умещается в переменную типа uint64_t, а значит, переполнения не случится и
+//  брать в качестве хэша остаток от деления на "размер" переменной необязательно
+struct HashFunction {
+    uint64_t operator() (const Colour &in_key) const {
+        return in_key.r +
+               in_key.g * coef +
+               in_key.b * coef * coef;
+    }
+    const uint64_t coef = 256;
+};
 
-    //  Define map of colour frequencies
-    std::map<chars, size_t> freqs;
+//  Псевдоним для часто употребляемого типа
+using u_map_colour = std::unordered_map<Colour, size_t, HashFunction>;
 
-    //  Define variables for RGB channels
-    unsigned char red, green, blue;
 
-    //  In the loop:
-    //  While searching for the most common colour,
-    //  If frequency of current pixel colour > previous max_freq value:
-    //  Update max_freq (frequency of the most common colour) and
-    //  Update max_freq_in_chars (the most common colour).
-    size_t max_freq = 0;
-    chars max_freq_in_chars;
-    for (size_t i = 0; i < image.width(); ++i) {
-        for (size_t j = 0; j < image.height(); ++j) {
-            //  Retrieve colour components at pixel (i, j)
-            std::tie(red, green, blue) = std::tie(image(i, j, 0, 0),
-                                                  image(i, j, 0, 1),
-                                                  image(i, j, 0, 2));
-            ++freqs[{red, green, blue}];
-            // Check if freqs_of_block[...] could be the max frequency
-            if (freqs[{red, green, blue}] > max_freq) {
-                max_freq_in_chars = {red, green, blue};
-                max_freq = freqs[{red, green, blue}];
-            }
-        }
+//  Обернём методы для работы с окном вывода (дисплеем) в отдельный класс
+class Display {
+protected:
+
+    //  Тип CImg<T> представляет изображение в виде сетки пикселей со значениями типа T (здесь unsigned char)
+    //  Сетка имеет размерность 4: ширина, высота, глубина самого изображения и число цветовых каналов пикселей
+    //  (= 3 для RGB).
+    CImg<unsigned char> display;
+
+public:
+    explicit Display(size_t width, size_t height, size_t colour_dim) {
+        //  Значение глубины изображения задаётся как 1, потому что работа осуществляется с "плоским" 2D изображением.
+        //  (Глубина 0 соответствует пустому изображению).
+        display = CImg<unsigned char>(width, height, 1, colour_dim);
     }
 
-    //  Fill the output display with black colour
-    most_common_colour.fill(0);
+    //  Заполнить дисплей цветом colour
+    CImg<unsigned char> Fill(const Colour& colour) {
+        return display.fill(colour.r, colour.g, colour.b);
+    }
 
-    //  Gather colour components to one variable
-    unsigned char col[] = {max_freq_in_chars[0], max_freq_in_chars[1], max_freq_in_chars[2]};
+    //  Вывести дисплей с названием name
+    void Print(const char*& name) {
+        display.display(name);
+    }
+};
 
-    //  Draw a rectangle with (0, 0) coordinates of upper-left corner,
-    //  (5, 5) coordinates of lower-right corner,
-    //  and colour "col"
-    most_common_colour.draw_rectangle(0, 0, 5, 5, col);
 
-    /*
-     *  I have no idea why, but when I use line 65 instead of line 57,
-     *  the printed colour looks very different, though both colours have the same RGB code.
-     *  Maybe the problem is only in my display. (line 64 just fills the region with colour "col")
-     */
+//  Обернём методы для работы с входным изображением в отдельный класс
+class Image {
+private:
 
-    //most_common_colour.draw_fill(0, 0, col);
+    //  Устройство типа CImg<T> см. в секции private класса Display
+    CImg<unsigned char> image;
 
-    //  Show the answer
-    most_common_colour.display("Most Common Colour");
+public:
+
+    //  Создание объекта типа CImg<unsigned char> из изображения с адресом input_path
+    explicit Image(const char*& input_path) {
+        image = CImg<unsigned char>(input_path);
+    }
+
+    //  Функция сохраняет в u_map_colour freqs данные о том, сколько раз встретилась та или иная комбинация RGB
+    [[nodiscard]]
+    u_map_colour CountFrequencies() const {
+        u_map_colour freqs;
+        unsigned char red, green, blue;
+
+        for (size_t i = 0; i < image.width(); ++i) {
+            for (size_t j = 0; j < image.height(); ++j) {
+                //  В image(i, j, 0, k) хранится интенсивность k-го цветового канала пикселя с координатами i, j.
+                //  (k = 0, 1, 2 для красного, зелёного и синего каналов соответственно)
+                std::tie(red, green, blue) = std::tie(image(i, j, 0, 0),
+                                                      image(i, j, 0, 1),
+                                                      image(i, j, 0, 2));
+                ++freqs[{red, green, blue}];
+            }
+        }
+        return freqs;
+    }
+};
+
+
+//  Функция ищет пиксель, встречающийся наиболее часто.
+//  Данные о RGB составляющих пикселя схраняются в max_freq_colour (max frequent colour);
+//  Частотность этого пикселя сохраняется в max_freq
+Colour FindMostPopularColour(const u_map_colour& freqs) {
+    size_t max_freq = 0;
+    Colour max_freq_colour;
+    for (const auto& [pixel, freq] : freqs) {
+        if (freq > max_freq) {
+            max_freq_colour = pixel;
+            max_freq = freq;
+        }
+    }
+    return max_freq_colour;
+}
+
+
+//  Создадим объект типа Image (внутри хранится CImg массив) по изображению с адресным путём input_path.
+//  Аргументы конструкторов CImg массивов требуют в качестве названия строку типа const char*,
+//  поэтому input_path преобразуем к этому виду.
+//  Создадим дисплей Display (внутри также хранится CImg массив) с названием title,
+//  размерами 1 х 1 пиксель и палитрой RGB.
+//  Далее:
+//      Посчитаем частотность встречаемостей различных пикселей изображения (image.CountFrequencies());
+//      Найдём самый частый пиксель (FindMostPopularColour);
+//      "Зальём" этим цветом дисплей (display.Fill);
+//  Выведем результат на экран
+int main() {
+    std::setlocale(LC_ALL, "Russian");
+
+    std::cout << "Введите путь к входному файлу:\n";
+
+    std::string input_path;
+    std::cin >> input_path;
+
+    const char* title = "Самый распространённый цвет";
+    const char* input_path_c = input_path.c_str();
+
+    Image image(input_path_c);
+    Display display(1, 1, 3);
+
+    display.Fill(
+            FindMostPopularColour(
+                    image.CountFrequencies()
+            )
+    );
+    display.Print(title);
 
     return 0;
 }
